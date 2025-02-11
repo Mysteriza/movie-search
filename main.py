@@ -5,13 +5,13 @@ import webbrowser
 from colorama import Fore, Style, init
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-# Inisialisasi colorama
+# Initialize colorama
 init(autoreset=True)
 
 
 class MovieLinkGenerator:
     def __init__(self):
-        # Load template URLs from JSON file
+        # Load templates from JSON file
         self.templates = self.load_templates()
 
     def load_templates(self):
@@ -34,24 +34,24 @@ class MovieLinkGenerator:
 
     def generate_links(self, movie_title, templates):
         """
-        Menghasilkan daftar link berdasarkan judul film atau subtitle.
+        Generate a list of links based on the movie title or subtitle.
 
-        :param movie_title: Judul film/subtitle yang akan digunakan sebagai query pencarian.
+        :param movie_title: Movie/subtitle title to use as a search query.
         :param templates: List of URL templates to use.
         :return: List of generated links.
         """
-        # Encode judul film/subtitle untuk URL (mengganti spasi dengan '+' atau '%20')
+        # Encode the movie/subtitle title for the URL (replace spaces with '+' or '%20')
         encoded_title = urllib.parse.quote_plus(movie_title)
 
-        # Generate link untuk setiap template URL
+        # Generate links for each template
         links = [template.format(encoded_title) for template in templates]
         return links
 
     def check_link(self, link):
         """
-        Memeriksa status sebuah link secara individual.
+        Check the status of a single link.
 
-        :param link: Link yang akan diperiksa.
+        :param link: Link to check.
         :return: Tuple of (link, status).
         """
         try:
@@ -65,7 +65,7 @@ class MovieLinkGenerator:
 
     def check_links(self, links):
         """
-        Memeriksa semua link secara simultan menggunakan concurrency.
+        Check all links simultaneously using concurrency.
 
         :param links: List of links to check.
         :return: Dictionary with link as key and status as value.
@@ -73,7 +73,7 @@ class MovieLinkGenerator:
         print(f"\n{Fore.CYAN}Checking links... Please wait.{Style.RESET_ALL}")
         link_status = {}
 
-        # Gunakan ThreadPoolExecutor untuk menjalankan pengecekan secara paralel
+        # Use ThreadPoolExecutor to check links concurrently
         with ThreadPoolExecutor(max_workers=10) as executor:
             future_to_link = {
                 executor.submit(self.check_link, link): link for link in links
@@ -86,7 +86,7 @@ class MovieLinkGenerator:
 
     def display_links(self, link_status, title):
         """
-        Menampilkan semua link dengan statusnya.
+        Display all links with their status.
 
         :param link_status: Dictionary with link as key and status as value.
         :param title: Title to display before the links.
@@ -113,7 +113,7 @@ class MovieLinkGenerator:
 
     def open_all_links_in_browser(self, links):
         """
-        Membuka semua link di browser pengguna.
+        Open all links in the user's browser.
 
         :param links: List of links to open.
         """
@@ -123,7 +123,7 @@ class MovieLinkGenerator:
 
         choice = (
             input(
-                f"\n{Fore.GREEN}Do you want to open all links in your browser? (y/n): {Style.RESET_ALL}"
+                f"\n{Fore.GREEN}Do you want to open all links in your browser? (Y/n): {Style.RESET_ALL}"
             )
             .strip()
             .lower()
@@ -138,38 +138,38 @@ class MovieLinkGenerator:
             print(f"{Fore.YELLOW}Opening links canceled.{Style.RESET_ALL}")
 
 
-# Contoh penggunaan
+# Example usage
 if __name__ == "__main__":
     generator = MovieLinkGenerator()
 
-    # Input judul film dari pengguna
+    # Input movie title from the user
     print(f"{Fore.MAGENTA}Welcome to the Movie Link Generator!{Style.RESET_ALL}")
-    movie_title = input(f"{Fore.GREEN}Masukkan judul film: {Style.RESET_ALL}").strip()
+    movie_title = input(f"{Fore.GREEN}Enter the movie title: {Style.RESET_ALL}").strip()
 
-    # Generate link untuk pencarian film
+    # Generate links for movie search
     movie_links = generator.generate_links(
         movie_title, generator.templates["movie_templates"]
     )
 
-    # Cek status link untuk pencarian film
+    # Check the status of movie links
     movie_link_status = generator.check_links(movie_links)
 
-    # Tampilkan hasil pencarian film
+    # Display movie search results
     generator.display_links(movie_link_status, "Generated Links for Movies")
 
-    # Generate link untuk pencarian subtitle
+    # Generate links for subtitle search
     subtitle_links = generator.generate_links(
         movie_title, generator.templates["subtitle_templates"]
     )
 
-    # Cek status link untuk pencarian subtitle
+    # Check the status of subtitle links
     subtitle_link_status = generator.check_links(subtitle_links)
 
-    # Tampilkan hasil pencarian subtitle
+    # Display subtitle search results
     generator.display_links(subtitle_link_status, "Generated Links for Subtitles")
 
-    # Gabungkan semua link (film dan subtitle)
+    # Combine all links (movies and subtitles)
     all_links = list(movie_link_status.keys()) + list(subtitle_link_status.keys())
 
-    # Tanyakan apakah ingin membuka semua link di browser
+    # Ask if the user wants to open all links in the browser
     generator.open_all_links_in_browser(all_links)
