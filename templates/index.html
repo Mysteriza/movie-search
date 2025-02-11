@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Movie Link Generator</title>
+        <link rel="stylesheet" href="/static/style.css">
+    </head>
+    <body>
+        <div class="wrapper">
+            <div class="container">
+                <h1>Movie Link Generator</h1>
+                <form id="search-form">
+                    <input type="text" id="movie-title"
+                        placeholder="Enter movie title..." required>
+                    <button type="submit">Search</button>
+                </form>
+                <div id="results"></div>
+            </div>
+            <footer>
+                <p>&copy; <span id="current-year"></span> Mysteriza |
+                    <a href="https://github.com/Mysteriza"
+                        target="_blank">GitHub</a>
+                </p>
+            </footer>
+        </div>
+        <script src="/static/script.js"></script>
+    </body>
+</html>
