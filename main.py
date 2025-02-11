@@ -1,5 +1,8 @@
 import urllib.parse
+import requests
+import webbrowser
 from colorama import Fore, Style, init
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Inisialisasi colorama
 init(autoreset=True)
@@ -7,59 +10,125 @@ init(autoreset=True)
 
 class MovieLinkGenerator:
     def __init__(self):
-        # Daftar template URL dari berbagai situs web
-        self.url_templates = [
+        # Daftar template URL untuk pencarian film
+        self.movie_url_templates = [
             "https://tv7.idlix.asia/search/{}",
             "https://pahe.ink/?s={}",
             "https://130.185.118.151/?s={}&post_type=post",
             "https://ww73.pencurimovie.bond/?s={}",
             "https://hydrahd.me/index.php?menu=search&query={}",
             "https://broflix.ci/search?text={}",
-            "https://freek.to/search?query={}",
+        ]
+        # Daftar template URL untuk pencarian subtitle
+        self.subtitle_url_templates = [
+            "https://subdl.com/search/{}",
+            "https://subsource.net/search/{}",
         ]
 
-    def generate_links(self, movie_title):
+    def generate_links(self, movie_title, templates):
         """
-        Menghasilkan daftar link berdasarkan judul film yang diinput.
+        Menghasilkan daftar link berdasarkan judul film atau subtitle.
 
-        :param movie_title: Judul film yang akan digunakan sebagai query pencarian.
+        :param movie_title: Judul film/subtitle yang akan digunakan sebagai query pencarian.
+        :param templates: List of URL templates to use.
         :return: List of generated links.
         """
-        # Encode judul film untuk URL (mengganti spasi dengan '+' atau '%20')
+        # Encode judul film/subtitle untuk URL (mengganti spasi dengan '+' atau '%20')
         encoded_title = urllib.parse.quote_plus(movie_title)
 
         # Generate link untuk setiap template URL
-        links = [template.format(encoded_title) for template in self.url_templates]
+        links = [template.format(encoded_title) for template in templates]
         return links
 
-    def add_url_template(self, new_template):
+    def check_link(self, link):
         """
-        Menambahkan template URL baru ke dalam daftar.
+        Memeriksa status sebuah link secara individual.
 
-        :param new_template: Template URL baru yang akan ditambahkan.
+        :param link: Link yang akan diperiksa.
+        :return: Tuple of (link, status).
         """
-        if new_template not in self.url_templates:
-            self.url_templates.append(new_template)
-            print(
-                f"{Fore.GREEN}Template URL '{new_template}' berhasil ditambahkan.{Style.RESET_ALL}"
-            )
-        else:
-            print(f"{Fore.YELLOW}Template URL sudah ada dalam daftar.{Style.RESET_ALL}")
+        try:
+            response = requests.get(link, timeout=5)
+            if response.status_code == 200:
+                return link, "Found"
+            else:
+                return link, "Unsure"
+        except requests.RequestException:
+            return link, "Error (Timeout or Unreachable)"
 
-    def display_links(self, links):
+    def check_links(self, links):
         """
-        Menampilkan semua link yang telah di-generate dengan format yang lebih menarik.
+        Memeriksa semua link secara simultan menggunakan concurrency.
 
-        :param links: List of links to display.
+        :param links: List of links to check.
+        :return: Dictionary with link as key and status as value.
+        """
+        print(f"\n{Fore.CYAN}Checking links... Please wait.{Style.RESET_ALL}")
+        link_status = {}
+
+        # Gunakan ThreadPoolExecutor untuk menjalankan pengecekan secara paralel
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            future_to_link = {
+                executor.submit(self.check_link, link): link for link in links
+            }
+            for future in as_completed(future_to_link):
+                link, status = future.result()
+                link_status[link] = status
+
+        return link_status
+
+    def display_links(self, link_status, title):
+        """
+        Menampilkan semua link dengan statusnya.
+
+        :param link_status: Dictionary with link as key and status as value.
+        :param title: Title to display before the links.
         """
         print("\n" + "=" * 50)
-        print(f"{Fore.CYAN}Generated Links for Your Movie Search:{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}{title}:{Style.RESET_ALL}")
         print("=" * 50)
 
-        for idx, link in enumerate(links, start=1):
-            print(f"{Fore.YELLOW}{idx}. {Fore.BLUE}{link}{Style.RESET_ALL}")
+        for idx, (link, status) in enumerate(link_status.items(), start=1):
+            if status == "Found":
+                print(
+                    f"{Fore.YELLOW}{idx}. {Fore.GREEN}[{status}] {Fore.BLUE}{link}{Style.RESET_ALL}"
+                )
+            elif status == "Unsure":
+                print(
+                    f"{Fore.YELLOW}{idx}. {Fore.YELLOW}[{status}] {Fore.BLUE}{link}{Style.RESET_ALL}"
+                )
+            else:
+                print(
+                    f"{Fore.YELLOW}{idx}. {Fore.MAGENTA}[{status}] {Fore.BLUE}{link}{Style.RESET_ALL}"
+                )
 
         print("=" * 50)
+
+    def open_all_links_in_browser(self, links):
+        """
+        Membuka semua link di browser pengguna.
+
+        :param links: List of links to open.
+        """
+        if not links:
+            print(f"{Fore.RED}No links to open in the browser.{Style.RESET_ALL}")
+            return
+
+        choice = (
+            input(
+                f"\n{Fore.GREEN}Do you want to open all links in your browser? (y/n): {Style.RESET_ALL}"
+            )
+            .strip()
+            .lower()
+        )
+        if choice == "y":
+            for link in links:
+                webbrowser.open(link)
+            print(
+                f"{Fore.GREEN}All links have been opened in your browser.{Style.RESET_ALL}"
+            )
+        else:
+            print(f"{Fore.YELLOW}Opening links canceled.{Style.RESET_ALL}")
 
 
 # Contoh penggunaan
@@ -70,11 +139,28 @@ if __name__ == "__main__":
     print(f"{Fore.MAGENTA}Welcome to the Movie Link Generator!{Style.RESET_ALL}")
     movie_title = input(f"{Fore.GREEN}Masukkan judul film: {Style.RESET_ALL}").strip()
 
-    # Generate link
-    links = generator.generate_links(movie_title)
+    # Generate link untuk pencarian film
+    movie_links = generator.generate_links(movie_title, generator.movie_url_templates)
 
-    # Tampilkan hasil
-    generator.display_links(links)
+    # Cek status link untuk pencarian film
+    movie_link_status = generator.check_links(movie_links)
 
-    # Contoh penambahan template URL baru
-    # generator.add_url_template("https://example.com/search?query={}")
+    # Tampilkan hasil pencarian film
+    generator.display_links(movie_link_status, "Generated Links for Movies")
+
+    # Generate link untuk pencarian subtitle
+    subtitle_links = generator.generate_links(
+        movie_title, generator.subtitle_url_templates
+    )
+
+    # Cek status link untuk pencarian subtitle
+    subtitle_link_status = generator.check_links(subtitle_links)
+
+    # Tampilkan hasil pencarian subtitle
+    generator.display_links(subtitle_link_status, "Generated Links for Subtitles")
+
+    # Gabungkan semua link (film dan subtitle)
+    all_links = list(movie_link_status.keys()) + list(subtitle_link_status.keys())
+
+    # Tanyakan apakah ingin membuka semua link di browser
+    generator.open_all_links_in_browser(all_links)
