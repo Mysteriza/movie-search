@@ -1,0 +1,14 @@
+{
+    "movie_templates": [
+        "https://tv7.idlix.asia/search/{}",
+        "https://pahe.ink/?s={}",
+        "https://130.185.118.151/?s={}&post_type=post",
+        "https://ww73.pencurimovie.bond/?s={}",
+        "https://hydrahd.me/index.php?menu=search&query={}",
+        "https://broflix.ci/search?text={}"
+    ],
+    "subtitle_templates": [
+        "https://subdl.com/search/{}",
+        "https://subsource.net/search/{}"
+    ]
+}

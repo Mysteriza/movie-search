@@ -1,3 +1,4 @@
+import json
 import urllib.parse
 import requests
 import webbrowser
@@ -10,20 +11,26 @@ init(autoreset=True)
 
 class MovieLinkGenerator:
     def __init__(self):
-        # Daftar template URL untuk pencarian film
-        self.movie_url_templates = [
-            "https://tv7.idlix.asia/search/{}",
-            "https://pahe.ink/?s={}",
-            "https://130.185.118.151/?s={}&post_type=post",
-            "https://ww73.pencurimovie.bond/?s={}",
-            "https://hydrahd.me/index.php?menu=search&query={}",
-            "https://broflix.ci/search?text={}",
-        ]
-        # Daftar template URL untuk pencarian subtitle
-        self.subtitle_url_templates = [
-            "https://subdl.com/search/{}",
-            "https://subsource.net/search/{}",
-        ]
+        # Load template URLs from JSON file
+        self.templates = self.load_templates()
+
+    def load_templates(self):
+        """
+        Load templates from a JSON file.
+
+        :return: Dictionary containing movie and subtitle templates.
+        """
+        try:
+            with open("templates.json", "r") as file:
+                return json.load(file)
+        except FileNotFoundError:
+            print(f"{Fore.RED}Error: 'templates.json' file not found.{Style.RESET_ALL}")
+            exit(1)
+        except json.JSONDecodeError:
+            print(
+                f"{Fore.RED}Error: Invalid JSON format in 'templates.json'.{Style.RESET_ALL}"
+            )
+            exit(1)
 
     def generate_links(self, movie_title, templates):
         """
@@ -140,7 +147,9 @@ if __name__ == "__main__":
     movie_title = input(f"{Fore.GREEN}Masukkan judul film: {Style.RESET_ALL}").strip()
 
     # Generate link untuk pencarian film
-    movie_links = generator.generate_links(movie_title, generator.movie_url_templates)
+    movie_links = generator.generate_links(
+        movie_title, generator.templates["movie_templates"]
+    )
 
     # Cek status link untuk pencarian film
     movie_link_status = generator.check_links(movie_links)
@@ -150,7 +159,7 @@ if __name__ == "__main__":
 
     # Generate link untuk pencarian subtitle
     subtitle_links = generator.generate_links(
-        movie_title, generator.subtitle_url_templates
+        movie_title, generator.templates["subtitle_templates"]
     )
 
     # Cek status link untuk pencarian subtitle
