@@ -41,25 +41,6 @@ document
       resultsDiv.innerHTML = "";
       displayResults(data.movies, "Movies", resultsDiv);
       displayResults(data.subtitles, "Subtitles", resultsDiv);
-
-      // Add "Open All" button
-      const openAllBtn = document.createElement("button");
-      openAllBtn.className = "open-all-btn";
-      openAllBtn.textContent = "Open All Links";
-      openAllBtn.onclick = () => {
-        const allLinks = [
-          ...Object.keys(data.movies),
-          ...Object.keys(data.subtitles),
-        ];
-        let delay = 0; // Delay in milliseconds
-        allLinks.forEach((link, index) => {
-          setTimeout(() => {
-            window.open(link, "_blank");
-          }, delay);
-          delay += 500; // Add 500ms delay between each link
-        });
-      };
-      resultsDiv.appendChild(openAllBtn);
     } catch (error) {
       resultsDiv.innerHTML = `<p class="error">An error occurred while fetching results.</p>`;
     }
@@ -78,6 +59,7 @@ function displayResults(links, title, container) {
             <tr>
                 <th>Link</th>
                 <th>Status</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody></tbody>
@@ -88,8 +70,9 @@ function displayResults(links, title, container) {
     const statusClass = status === "Found" ? "found" : "unsure"; // Only Found or Unsure
     tbody.innerHTML += `
             <tr>
-                <td><a href="${link}" target="_blank">${link}</a></td>
+                <td>${link}</td>
                 <td class="${statusClass}">${status}</td>
+                <td><button class="open-link-btn" onclick="window.open('${link}', '_blank')">Open Link</button></td>
             </tr>
         `;
   }
