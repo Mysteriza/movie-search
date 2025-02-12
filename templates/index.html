@@ -11,11 +11,14 @@
             <div class="container">
                 <h1>Movie Link Generator</h1>
                 <form id="search-form">
-                    <input type="text" id="movie-title"
+                    <input type="text" id="movie-title" list="movie-suggestions"
                         placeholder="Enter movie title..." required>
+                    <datalist id="movie-suggestions"></datalist>
                     <button type="submit">Search</button>
                 </form>
+                <div id="movie-details"></div>
                 <div id="results"></div>
+                <div class="loader"></div>
             </div>
             <footer>
                 <p>&copy; <span id="current-year"></span> Mysteriza |
