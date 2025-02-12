@@ -1,11 +1,13 @@
 # Movie Search
 Movie Link Generator (Movie Search) is a Flask-based web application that helps users automatically search for movie links and subtitles from various popular sites. This application is designed to provide fast and accurate search results with a simple and responsive interface.
 
+You can try it in [Movie Search](https://compact-molly-mysteriza-cf4a7a2f.koyeb.app/)
+
 ## Key Features
-Automatic Search: Enter a movie title, and the app will generate a list of links from various websites.
-Link Status: Each link is assigned a status (Found or Unsure) to help users determine its availability.
-Responsive Interface: Optimized for both desktop and mobile devices.
-Random User-Agent: Prevents bot detection when making HTTP requests to external sites.
+- Automatic Search: Enter a movie title, and the app will generate a list of links from various websites.
+- Link Status: Each link is assigned a status (Found or Unsure) to help users determine its availability.
+- Responsive Interface: Optimized for both desktop and mobile devices.
+- Random User-Agent: Prevents bot detection when making HTTP requests to external sites.
 ## How to Run Locally
 
 1. **Clone Repository**:
