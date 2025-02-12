@@ -4,6 +4,7 @@ import urllib.parse
 import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import os
+import random  # For random user-agent selection
 from dotenv import load_dotenv
 
 # Load environment variables from .env
@@ -22,6 +23,19 @@ def load_templates():
         return {"movie_templates": [], "subtitle_templates": []}
 
 
+# Load user agents from file
+def load_user_agents():
+    try:
+        with open("user_agent.txt", "r") as file:
+            user_agents = file.read().splitlines()  # Read all lines into a list
+            return user_agents
+    except FileNotFoundError:
+        print("User-agent file not found. Using default user-agent.")
+        return [
+            "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0"
+        ]  # Fallback to default user-agent
+
+
 # Generate links based on templates using the original input
 def generate_links(movie_title, templates):
     encoded_title = urllib.parse.quote_plus(movie_title)  # Encode special characters
@@ -29,13 +43,14 @@ def generate_links(movie_title, templates):
 
 
 # Check the status of a single link
-def check_link(link):
+def check_link(link, user_agents):
     """
     Check the status of a single link using a random user agent.
     :param link: Link to check.
+    :param user_agents: List of user agents to choose from.
     :return: Tuple of (link, status).
     """
-    headers = {"User-Agent": "Mozilla/5.0"}  # Default user-agent
+    headers = {"User-Agent": random.choice(user_agents)}  # Randomly select a user-agent
     try:
         response = requests.get(link, headers=headers, timeout=5)
         if response.status_code == 200:
@@ -48,9 +63,12 @@ def check_link(link):
 
 # Check multiple links concurrently
 def check_links(links):
+    user_agents = load_user_agents()  # Load user agents once for all links
     link_status = {}
     with ThreadPoolExecutor(max_workers=15) as executor:
-        future_to_link = {executor.submit(check_link, link): link for link in links}
+        future_to_link = {
+            executor.submit(check_link, link, user_agents): link for link in links
+        }
         for future in as_completed(future_to_link):
             link, status = future.result()
             link_status[link] = status
@@ -69,11 +87,9 @@ def suggest():
     query = request.args.get("q", "").strip()
     if not query:
         return jsonify([])
-
     omdb_api_key = os.getenv("OMDB_API_KEY")
     if not omdb_api_key:
         return jsonify([])
-
     url = f"http://www.omdbapi.com/?s={query}&apikey={omdb_api_key}"
     try:
         response = requests.get(url)
@@ -86,6 +102,24 @@ def suggest():
     except Exception as e:
         print(f"Error fetching suggestions: {e}")
         return jsonify([])
+
+
+# Helper function to convert runtime from minutes to hours and minutes
+def convert_runtime(runtime):
+    """
+    Convert runtime from minutes to hours and minutes format.
+    Example: "169 min" -> "169 min (2h 8m)"
+    :param runtime: Runtime string from OMDB API (e.g., "169 min").
+    :return: Converted runtime string (e.g., "169 min (2h 8m)").
+    """
+    try:
+        # Extract the number of minutes from the runtime string
+        minutes = int(runtime.split()[0])
+        hours = minutes // 60  # Calculate hours
+        remaining_minutes = minutes % 60  # Calculate remaining minutes
+        return f"{minutes} min ({hours}h {remaining_minutes}m)"
+    except (ValueError, AttributeError):
+        return runtime  # Return original runtime if conversion fails
 
 
 # Search route
@@ -107,10 +141,13 @@ def search():
             omdb_data = omdb_response.json()
             if omdb_data.get("Response") == "True":
                 # Extract relevant movie details if found
+                runtime = omdb_data.get("Runtime", "N/A")
+                converted_runtime = convert_runtime(runtime)  # Convert runtime
+
                 movie_details = {
                     "Title": omdb_data.get("Title"),
                     "Released": omdb_data.get("Released"),
-                    "Runtime": omdb_data.get("Runtime"),
+                    "Runtime": converted_runtime,  # Use converted runtime
                     "Genre": omdb_data.get("Genre"),
                     "Director": omdb_data.get("Director"),
                     "Plot": omdb_data.get("Plot"),

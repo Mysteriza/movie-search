@@ -72,27 +72,45 @@ button:hover {
     text-align: left; /* Align text to the left */
 }
 
-.movie-info {
-    background: #2c2c2c;
-    padding: 15px;
+/* Movie Details Table Styles */
+.movie-info-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background-color: #2c2c2c; /* Dark table background */
     border-radius: 5px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    overflow: hidden; /* Ensure rounded corners are visible */
+    table-layout: fixed; /* Fix layout to handle long text */
 }
 
-.movie-info h3 {
-    color: #1db954;
-    margin-bottom: 10px;
+.movie-info-table th,
+.movie-info-table td {
+    padding: 10px;
+    border: 1px solid #333;
+    color: #e0e0e0; /* Light text for contrast */
+    word-wrap: break-word; /* Break long words */
+    overflow-wrap: anywhere; /* Handle very long text */
+    white-space: normal; /* Allow wrapping */
 }
 
-.movie-info p {
-    margin: 5px 0;
-    color: #e0e0e0;
+.movie-info-table th {
+    background-color: #1db954; /* Darker green for headers */
+    color: white;
+    text-align: left; /* Align headers to the left */
+    width: 25%; /* Fixed width for headers */
 }
 
-.movie-info strong {
-    color: #1db954;
-    display: inline-block;
-    width: 120px; /* Align colons */
+.movie-info-table td {
+    text-align: left; /* Align content to the left */
+    width: 75%; /* Fixed width for content */
+}
+
+/* Responsive Design for Mobile */
+@media (max-width: 768px) {
+    .movie-info-table th,
+    .movie-info-table td {
+        font-size: 14px; /* Smaller font size for mobile */
+    }
 }
 
 #results {
