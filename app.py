@@ -26,7 +26,7 @@ def load_templates():
 # Load user agents from file
 def load_user_agents():
     try:
-        with open("user_agent.txt", "r") as file:
+        with open("user_agents.txt", "r") as file:
             user_agents = file.read().splitlines()  # Read all lines into a list
             return user_agents
     except FileNotFoundError:
