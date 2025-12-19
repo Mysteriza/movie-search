@@ -135,6 +135,11 @@ document
       const data = await response.json();
       loader.style.display = "none"; // Hide loader
 
+      if (response.status === 429) {
+        resultsDiv.innerHTML = `<p class="error">Rate limit exceeded. Please try again later.</p>`;
+        return;
+      }
+
       if (data.error) {
         resultsDiv.innerHTML = `<p class="error">${data.error}</p>`;
         return;
