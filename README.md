@@ -4,23 +4,18 @@ Movie Link Generator (Movie Search) is a Flask-based web application that helps 
 
 You can try it in [Movie Search](https://movie-search.koyeb.app/)
 
-## 📑 Documentation
-
-- **[Quick Start Guide](QUICKSTART.md)** - Get started in 5 minutes
-- **[Upgrade Summary](UPGRADE_SUMMARY.md)** - Complete list of improvements & changes
-- **[Koyeb Deployment](KOYEB_DEPLOYMENT.md)** - Step-by-step deployment guide
-- **[Security Policy](SECURITY.md)** - Security features & best practices
-
 ## Key Features
 
-- ✅ **Automatic Search**: Enter a movie title, and the app will generate a list of links from various websites.
-- ✅ **Link Status**: Each link is assigned a status (Found or Unsure) to help users determine its availability.
-- ✅ **Responsive Interface**: Optimized for both desktop and mobile devices.
+- ✅ **12 Streaming Sites**: Instant access to Driverays, Batchindo, HydraHD, Moviepire, Nunflix, Pahe, Series Online HD, Today TV Series, idlix, TV Shows, uFlix, and Pencurimovie
+- ✅ **Smart URL Encoding**: Automatic removal of special characters to prevent firewall blocks
+- ✅ **One-Click Access**: Individual Visit buttons for direct access to each streaming site
+- ✅ **Smart Numbering**: Organized list with auto-numbering for easy reference
 - ✅ **Autocomplete Search**: Real-time movie suggestions using OMDb API
 - ✅ **Movie Details**: Display comprehensive film information (rating, director, plot, etc.)
-- ✅ **Dark Mode**: Modern dark theme for comfortable viewing
-- ✅ **Rate Limiting**: Protection against abuse
-- ✅ **Caching**: Faster responses with intelligent caching
+- ✅ **Modern Dark UI**: Professional gradient design with smooth animations
+- ✅ **Fully Responsive**: Optimized for desktop, tablet, and mobile devices
+- ✅ **Rate Limiting**: Protection against abuse (10 searches/min, 30 suggestions/min)
+- ✅ **Smart Caching**: Faster responses with 5-minute intelligent caching
 - ✅ **Security Headers**: Production-grade security implementation
 
 ## How to Run Locally

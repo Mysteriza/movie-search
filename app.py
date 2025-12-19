@@ -2,9 +2,7 @@ from flask import Flask, render_template, request, jsonify
 import json
 import urllib.parse
 import requests
-from concurrent.futures import ThreadPoolExecutor, as_completed
 import os
-import random  # For random user-agent selection
 from dotenv import load_dotenv
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -103,60 +101,53 @@ def load_templates():
         return {"movie_templates": [], "subtitle_templates": []}
 
 
-# Load user agents from file
-def load_user_agents():
-    try:
-        with open("user_agents.txt", "r") as file:
-            user_agents = file.read().splitlines()  # Read all lines into a list
-            return user_agents
-    except FileNotFoundError:
-        print("User-agent file not found. Using default user-agent.")
-        return [
-            "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0"
-        ]  # Fallback to default user-agent
-
-
 # Generate links based on templates using the original input
 def generate_links(movie_title, templates):
-    encoded_title = urllib.parse.quote_plus(movie_title)  # Encode special characters
+    cleaned_title = movie_title.replace("'", "").replace('"', "").replace("'", "")
+    encoded_title = urllib.parse.quote(cleaned_title, safe="")
     return [template.format(encoded_title) for template in templates]
 
 
-# Check the status of a single link
-def check_link(link, user_agents):
-    """
-    Check the status of a single link using a random user agent.
-    :param link: Link to check.
-    :param user_agents: List of user agents to choose from.
-    :return: Tuple of (link, status).
-    """
-    headers = {"User-Agent": random.choice(user_agents)}  # Randomly select a user-agent
-    try:
-        response = requests.get(link, headers=headers, timeout=5, allow_redirects=True)
-        if response.status_code == 200:
-            return link, "Found"
-        else:
-            return link, "Unsure"
-    except (requests.RequestException, requests.Timeout, ConnectionError):
-        return link, "Unsure"
+def extract_website_name(url):
+    website_mapping = {
+        "130.185.118.151": "Driverays",
+        "batch.moe": "Batchindo",
+        "hydrahd.me": "HydraHD",
+        "moviepire.net": "Moviepire",
+        "nunflix.li": "Nunflix",
+        "pahe.ink": "Pahe",
+        "seriesonlinehd.net": "Series Online HD",
+        "todaytvseries1.com": "Today TV Series",
+        "tv11.idlixku.com": "idlix",
+        "tvshows.ac": "TV Shows",
+        "uflix.cc": "uFlix",
+        "pencurimovie.bond": "Pencurimovie",
+        "subdl.com": "Subdl",
+        "subsource.net": "Subsource",
+    }
+
+    from urllib.parse import urlparse
+
+    parsed = urlparse(url)
+    domain = parsed.netloc or parsed.path
+    domain = domain.replace("www.", "")
+
+    for key, value in website_mapping.items():
+        if key in domain:
+            return value
+
+    parts = domain.split(".")
+    if len(parts) >= 2:
+        return parts[0].capitalize()
+    return domain.capitalize()
 
 
-# Check multiple links concurrently
-def check_links(links):
-    user_agents = load_user_agents()  # Load user agents once for all links
-    link_status = {}
-    # Optimize max_workers based on number of links
-    max_workers = min(
-        10, len(links)
-    )  # Reduced from 15 to 10 for better resource management
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        future_to_link = {
-            executor.submit(check_link, link, user_agents): link for link in links
-        }
-        for future in as_completed(future_to_link):
-            link, status = future.result()
-            link_status[link] = status
-    return link_status
+def prepare_link_data(links):
+    result = []
+    for link in links:
+        website_name = extract_website_name(link)
+        result.append({"name": website_name, "url": link})
+    return result
 
 
 # Home route
@@ -175,32 +166,35 @@ def health():
 # Suggest route (Autocomplete using OMDb API)
 @app.route("/suggest", methods=["GET"])
 @limiter.limit("30 per minute")
-@cache.cached(timeout=300, query_string=True)  # Cache suggestions for 5 minutes
 def suggest():
     query = request.args.get("q", "").strip()
 
-    # Input validation
     if not query:
         return jsonify([])
 
-    if len(query) > 100:  # Prevent excessive queries
+    if len(query) > 100:
         return jsonify([])
 
-    # Sanitize input - only allow alphanumeric, spaces, and common punctuation
     if not all(c.isalnum() or c.isspace() or c in "'-:.,!?" for c in query):
         return jsonify([])
 
     omdb_api_key = os.getenv("OMDB_API_KEY")
     if not omdb_api_key:
+        app.logger.error("OMDB_API_KEY not found")
         return jsonify([])
+
     url = f"http://www.omdbapi.com/?s={query}&apikey={omdb_api_key}"
     try:
         response = requests.get(url, timeout=5)
         data = response.json()
+        app.logger.info(f"OMDb Response for '{query}': {data.get('Response')}")
         if data.get("Response") == "True":
             suggestions = [movie["Title"] for movie in data.get("Search", [])]
-            return jsonify(suggestions[:10])  # Limit to 10 suggestions
+            return jsonify(suggestions[:10])
         else:
+            app.logger.warning(
+                f"OMDb returned False for query: {query}, Error: {data.get('Error')}"
+            )
             return jsonify([])
     except Exception as e:
         app.logger.error(f"Error fetching suggestions: {e}")
@@ -281,16 +275,14 @@ def search():
     movie_links = generate_links(movie_title, templates["movie_templates"])
     subtitle_links = generate_links(movie_title, templates["subtitle_templates"])
 
-    # Check links concurrently
-    movie_link_status = check_links(movie_links)
-    subtitle_link_status = check_links(subtitle_links)
+    movie_link_data = prepare_link_data(movie_links)
+    subtitle_link_data = prepare_link_data(subtitle_links)
 
     return jsonify(
         {
-            "movie_details": movie_details
-            or {},  # Return empty object if no details found
-            "movies": movie_link_status,
-            "subtitles": subtitle_link_status,
+            "movie_details": movie_details or {},
+            "movies": movie_link_data,
+            "subtitles": subtitle_link_data,
         }
     )
 

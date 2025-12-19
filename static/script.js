@@ -159,33 +159,43 @@ document
 
 // Function to display results in tables
 function displayResults(links, title, container) {
-  if (Object.keys(links).length === 0) {
+  if (links.length === 0) {
     container.innerHTML += `<p>No results found for ${title.toLowerCase()}.</p>`;
     return;
   }
 
-  container.innerHTML += `<h3>${title}</h3>`;
+  const sectionDiv = document.createElement("div");
+  sectionDiv.className = "results-section";
+
+  const heading = document.createElement("h3");
+  heading.textContent = title;
+  sectionDiv.appendChild(heading);
+
   const table = document.createElement("table");
   table.innerHTML = `
       <thead>
           <tr>
-              <th>Link</th>
-              <th>Status</th>
+              <th style="width: 60px;">#</th>
+              <th>Website</th>
+              <th style="width: 120px;">Action</th>
           </tr>
       </thead>
       <tbody></tbody>
   `;
 
   const tbody = table.querySelector("tbody");
-  for (const [link, status] of Object.entries(links)) {
-    const statusClass = status === "Found" ? "found" : "unsure"; // Only Found or Unsure
+  links.forEach((item, index) => {
     tbody.innerHTML += `
           <tr>
-              <td><span class="clickable-link" onclick="window.open('${link}', '_blank')">${link}</span></td>
-              <td class="${statusClass}">${status}</td>
+              <td>${index + 1}</td>
+              <td>${item.name}</td>
+              <td><button class="visit-btn" onclick="window.open('${
+                item.url
+              }', '_blank')">Visit</button></td>
           </tr>
       `;
-  }
+  });
 
-  container.appendChild(table);
+  sectionDiv.appendChild(table);
+  container.appendChild(sectionDiv);
 }
