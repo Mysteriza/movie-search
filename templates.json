@@ -5,7 +5,15 @@
         "https://130.185.118.151/?s={}&post_type=post",
         "https://ww73.pencurimovie.bond/?s={}",
         "https://hydrahd.me/index.php?menu=search&query={}",
-        "https://broflix.ci/search?text={}"
+        "https://broflix.ci/search?text={}",
+        "https://tvshows.ac/search/{}",
+        "https://www.todaytvseries1.com/search-series?searchword={}",
+        "https://nunflix.li/search?text={}",
+        "https://seriesonlinehd.net/search/{}",
+        "https://moviepire.net/search?q={}",
+        "https://uflix.cc/search?keyword={}",
+        "https://batch.moe/?s={}",
+        "https://hydrahd.ru/index.php?menu=search&query={}"
     ],
     "subtitle_templates": [
         "https://subdl.com/search/{}",
