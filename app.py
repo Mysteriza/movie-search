@@ -98,7 +98,12 @@ def load_templates():
         with open("templates.json", "r") as file:
             return json.load(file)
     except FileNotFoundError:
-        return {"movie_templates": [], "subtitle_templates": []}
+        return {
+            "download_templates": [],
+            "streaming_templates": [],
+            "tvshow_templates": [],
+            "subtitle_templates": [],
+        }
 
 
 # Generate links based on templates using the original input
@@ -118,11 +123,11 @@ def extract_website_name(url):
         "pahe.ink": "Pahe",
         "seriesonlinehd.net": "Series Online HD",
         "todaytvseries1.com": "Today TV Series",
-        "tv11.idlixku.com": "idlix",
+        "tv11.idlixku.com": "Idlix",
         "tvshows.ac": "TV Shows",
         "uflix.cc": "uFlix",
         "pencurimovie.bond": "Pencurimovie",
-        "subdl.com": "Subdl",
+        "subdl.com": "SubDL",
         "subsource.net": "Subsource",
     }
 
@@ -281,16 +286,22 @@ def search():
 
     # Generate links based on templates using the original input
     templates = load_templates()
-    movie_links = generate_links(movie_title, templates["movie_templates"])
+    download_links = generate_links(movie_title, templates["download_templates"])
+    streaming_links = generate_links(movie_title, templates["streaming_templates"])
+    tvshow_links = generate_links(movie_title, templates["tvshow_templates"])
     subtitle_links = generate_links(movie_title, templates["subtitle_templates"])
 
-    movie_link_data = prepare_link_data(movie_links)
+    download_link_data = prepare_link_data(download_links)
+    streaming_link_data = prepare_link_data(streaming_links)
+    tvshow_link_data = prepare_link_data(tvshow_links)
     subtitle_link_data = prepare_link_data(subtitle_links)
 
     return jsonify(
         {
             "movie_details": movie_details or {},
-            "movies": movie_link_data,
+            "downloads": download_link_data,
+            "streaming": streaming_link_data,
+            "tvshows": tvshow_link_data,
             "subtitles": subtitle_link_data,
         }
     )

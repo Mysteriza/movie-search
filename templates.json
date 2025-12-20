@@ -1,20 +1,23 @@
 {
-    "movie_templates": [
-        "https://130.185.118.151/?s={}&post_type=post",
-        "https://batch.moe/?s={}",
-        "https://hydrahd.me/index.php?menu=search&query={}",
+    "download_templates": [
+        "https://pahe.ink/?s={}",
+        "https://130.185.118.151/?s={}&post_type=post"
+    ],
+    "streaming_templates": [
+        "https://tv11.idlixku.com/search/{}",
         "https://moviepire.net/search?q={}",
         "https://nunflix.li/search?text={}",
-        "https://pahe.ink/?s={}",
         "https://seriesonlinehd.net/search/{}",
-        "https://www.todaytvseries1.com/search-series?searchword={}",
-        "https://tv11.idlixku.com/search/{}",
-        "https://tvshows.ac/search/{}",
+        "https://hydrahd.me/index.php?menu=search&query={}",
         "https://uflix.cc/search?keyword={}",
         "https://ww73.pencurimovie.bond/?s={}"
     ],
+    "tvshow_templates": [
+        "https://www.todaytvseries1.com/search-series?searchword={}",
+        "https://tvshows.ac/search/{}"
+    ],
     "subtitle_templates": [
-        "https://subdl.com/search/{}",
-        "https://subsource.net/search?q={}"
+        "https://subsource.net/search?q={}",
+        "https://subdl.com/search/{}"
     ]
 }

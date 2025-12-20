@@ -189,6 +189,14 @@ h1 {
     margin-bottom: 25px;
 }
 
+.platform-category {
+    color: #1db954;
+    font-size: 1.2rem;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    text-align: left;
+}
+
 .platforms-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
