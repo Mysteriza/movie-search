@@ -10,12 +10,95 @@
         <div class="wrapper">
             <div class="container">
                 <h1>Movie Link Generator</h1>
+                <p class="subtitle">Your one-stop solution to find movies across
+                    12+ streaming platforms</p>
+
                 <form id="search-form">
                     <input type="text" id="movie-title" list="movie-suggestions"
                         placeholder="Enter movie title..." required>
                     <datalist id="movie-suggestions"></datalist>
                     <button type="submit">Search</button>
                 </form>
+
+                <div id="welcome-content">
+                    <div class="hero-section">
+                        <div class="hero-icon">🎬</div>
+                        <p class="hero-description">
+                            Search for any movie and instantly get direct links
+                            to watch or download from multiple streaming
+                            platforms.
+                            Save time by finding all available sources in one
+                            place!
+                        </p>
+                    </div>
+
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">⚡</div>
+                            <h3>Instant Results</h3>
+                            <p>Get links from 12+ platforms in seconds</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🔍</div>
+                            <h3>Smart Search</h3>
+                            <p>Real-time autocomplete suggestions</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🎯</div>
+                            <h3>Direct Access</h3>
+                            <p>One-click to any streaming site</p>
+                        </div>
+                    </div>
+
+                    <div class="how-to-use">
+                        <h2>How to Use</h2>
+                        <div class="steps">
+                            <div class="step">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <h4>Search Movie</h4>
+                                    <p>Type movie title in the search box</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <h4>Select Suggestion</h4>
+                                    <p>Choose from autocomplete results</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <h4>Get Links</h4>
+                                    <p>Access all available streaming
+                                        platforms</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="platforms-section">
+                        <h2>Supported Platforms</h2>
+                        <div class="platforms-grid">
+                            <div class="platform-badge">Driverays</div>
+                            <div class="platform-badge">Batchindo</div>
+                            <div class="platform-badge">HydraHD</div>
+                            <div class="platform-badge">Moviepire</div>
+                            <div class="platform-badge">Nunflix</div>
+                            <div class="platform-badge">Pahe</div>
+                            <div class="platform-badge">Series Online HD</div>
+                            <div class="platform-badge">Today TV Series</div>
+                            <div class="platform-badge">idlix</div>
+                            <div class="platform-badge">TV Shows</div>
+                            <div class="platform-badge">uFlix</div>
+                            <div class="platform-badge">Pencurimovie</div>
+                        </div>
+                        <p class="subtitle-support">Plus subtitle support from
+                            Subdl & Subsource</p>
+                    </div>
+                </div>
+
                 <div id="movie-details"></div>
                 <div id="results"></div>
                 <div class="loader"></div>

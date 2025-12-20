@@ -189,7 +189,10 @@ def suggest():
         data = response.json()
         app.logger.info(f"OMDb Response for '{query}': {data.get('Response')}")
         if data.get("Response") == "True":
-            suggestions = [movie["Title"] for movie in data.get("Search", [])]
+            suggestions = [
+                f"{movie['Title']} ({movie.get('Year', 'N/A')})"
+                for movie in data.get("Search", [])
+            ]
             return jsonify(suggestions[:10])
         else:
             app.logger.warning(
@@ -224,13 +227,17 @@ def convert_runtime(runtime):
 @limiter.limit("10 per minute")
 def search():
     movie_title = request.form.get("movie_title", "").strip()
+    movie_year = request.form.get("movie_year", "").strip()
 
     # Input validation
     if not movie_title:
         return jsonify({"error": "Please enter a movie title."}), 400
 
-    if len(movie_title) > 100:  # Prevent excessive input
+    if len(movie_title) > 100:
         return jsonify({"error": "Movie title too long."}), 400
+
+    if movie_year and not movie_year.isdigit():
+        return jsonify({"error": "Invalid year format."}), 400
 
     # Sanitize input
     if not all(c.isalnum() or c.isspace() or c in "'-:.,!?" for c in movie_title):
@@ -243,6 +250,8 @@ def search():
     omdb_api_key = os.getenv("OMDB_API_KEY")
     if omdb_api_key:
         omdb_url = f"http://www.omdbapi.com/?t={urllib.parse.quote_plus(movie_title)}&apikey={omdb_api_key}"
+        if movie_year:
+            omdb_url += f"&y={movie_year}"
         try:
             omdb_response = requests.get(omdb_url, timeout=5)
             omdb_data = omdb_response.json()

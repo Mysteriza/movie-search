@@ -108,20 +108,31 @@ document
   .getElementById("search-form")
   .addEventListener("submit", async function (e) {
     e.preventDefault();
-    const movieTitle = movieTitleInput.value.trim();
+    let movieTitle = movieTitleInput.value.trim();
     if (!movieTitle) {
       alert("Please enter a movie title.");
       return;
     }
 
+    let movieYear = "";
+    const yearMatch = movieTitle.match(/(.+?)\s*\((\d{4}).*\)$/);
+    if (yearMatch) {
+      movieTitle = yearMatch[1].trim();
+      movieYear = yearMatch[2];
+    }
+
     const resultsDiv = document.getElementById("results");
     const movieDetailsDiv = document.getElementById("movie-details");
     const loader = document.querySelector(".loader");
+    const welcomeContent = document.getElementById("welcome-content");
 
-    // Clear previous results and movie details
+    if (welcomeContent) {
+      welcomeContent.style.display = "none";
+    }
+
     resultsDiv.innerHTML = "";
     movieDetailsDiv.innerHTML = "";
-    loader.style.display = "block"; // Show loader
+    loader.style.display = "block";
 
     try {
       const response = await fetch("/search", {
@@ -129,7 +140,9 @@ document
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: `movie_title=${encodeURIComponent(movieTitle)}`,
+        body: `movie_title=${encodeURIComponent(
+          movieTitle
+        )}&movie_year=${encodeURIComponent(movieYear)}`,
       });
 
       const data = await response.json();
