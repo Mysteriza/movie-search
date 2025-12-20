@@ -6,8 +6,8 @@ You can try it in [Movie Search](https://movie-search.koyeb.app/)
 
 ## Key Features
 
-- ✅ **Categorized Platforms**: Organized by Download, Streaming, TV Shows, and Subtitles
-- ✅ **11 Streaming Sites**: Pahe, Driverays, idlix, Moviepire, Nunflix, Series Online HD, HydraHD, uFlix, Pencurimovie, Today TV Series, TV Shows
+- ✅ **Categorized Platforms**: Organized by Download, TV Show Download, Streaming, TV Shows, and Subtitles
+- ✅ **12 Streaming Sites**: Pahe, Driverays, Batchindo, idlix, Moviepire, Nunflix, Series Online HD, HydraHD, uFlix, Pencurimovie, Today TV Series, TV Shows
 - ✅ **Smart URL Encoding**: Automatic removal of special characters to prevent firewall blocks
 - ✅ **Year-based Search**: Autocomplete shows movie year to distinguish similar titles
 - ✅ **One-Click Access**: Individual Visit buttons for direct access to each streaming site

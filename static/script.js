@@ -168,6 +168,11 @@ document
         resultsDiv
       );
       displayResults(
+        data.tvshow_downloads,
+        "TV Show - Download Only",
+        resultsDiv
+      );
+      displayResults(
         data.streaming,
         "Movies & TV Show - Streaming Only",
         resultsDiv

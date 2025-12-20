@@ -100,6 +100,7 @@ def load_templates():
     except FileNotFoundError:
         return {
             "download_templates": [],
+            "tvshow_download_templates": [],
             "streaming_templates": [],
             "tvshow_templates": [],
             "subtitle_templates": [],
@@ -287,11 +288,15 @@ def search():
     # Generate links based on templates using the original input
     templates = load_templates()
     download_links = generate_links(movie_title, templates["download_templates"])
+    tvshow_download_links = generate_links(
+        movie_title, templates["tvshow_download_templates"]
+    )
     streaming_links = generate_links(movie_title, templates["streaming_templates"])
     tvshow_links = generate_links(movie_title, templates["tvshow_templates"])
     subtitle_links = generate_links(movie_title, templates["subtitle_templates"])
 
     download_link_data = prepare_link_data(download_links)
+    tvshow_download_link_data = prepare_link_data(tvshow_download_links)
     streaming_link_data = prepare_link_data(streaming_links)
     tvshow_link_data = prepare_link_data(tvshow_links)
     subtitle_link_data = prepare_link_data(subtitle_links)
@@ -300,6 +305,7 @@ def search():
         {
             "movie_details": movie_details or {},
             "downloads": download_link_data,
+            "tvshow_downloads": tvshow_download_link_data,
             "streaming": streaming_link_data,
             "tvshows": tvshow_link_data,
             "subtitles": subtitle_link_data,

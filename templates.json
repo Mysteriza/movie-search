@@ -3,6 +3,9 @@
         "https://pahe.ink/?s={}",
         "https://130.185.118.151/?s={}&post_type=post"
     ],
+    "tvshow_download_templates": [
+        "https://batch.moe/?s={}"
+    ],
     "streaming_templates": [
         "https://tv11.idlixku.com/search/{}",
         "https://moviepire.net/search?q={}",
