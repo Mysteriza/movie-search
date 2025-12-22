@@ -103,6 +103,7 @@ def load_templates():
             "tvshow_download_templates": [],
             "streaming_templates": [],
             "tvshow_templates": [],
+            "torrent_templates": [],
             "subtitle_templates": [],
         }
 
@@ -128,6 +129,9 @@ def extract_website_name(url):
         "tvshows.ac": "TV Shows",
         "uflix.cc": "uFlix",
         "pencurimovie.bond": "Pencurimovie",
+        "vertexmovies.com": "Vertexmovies",
+        "snowstream.vercel.app": "Snowstream",
+        "ext.to": "ExtraTorrent",
         "subdl.com": "SubDL",
         "subsource.net": "Subsource",
     }
@@ -293,12 +297,14 @@ def search():
     )
     streaming_links = generate_links(movie_title, templates["streaming_templates"])
     tvshow_links = generate_links(movie_title, templates["tvshow_templates"])
+    torrent_links = generate_links(movie_title, templates["torrent_templates"])
     subtitle_links = generate_links(movie_title, templates["subtitle_templates"])
 
     download_link_data = prepare_link_data(download_links)
     tvshow_download_link_data = prepare_link_data(tvshow_download_links)
     streaming_link_data = prepare_link_data(streaming_links)
     tvshow_link_data = prepare_link_data(tvshow_links)
+    torrent_link_data = prepare_link_data(torrent_links)
     subtitle_link_data = prepare_link_data(subtitle_links)
 
     return jsonify(
@@ -308,6 +314,7 @@ def search():
             "tvshow_downloads": tvshow_download_link_data,
             "streaming": streaming_link_data,
             "tvshows": tvshow_link_data,
+            "torrents": torrent_link_data,
             "subtitles": subtitle_link_data,
         }
     )

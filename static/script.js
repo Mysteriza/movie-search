@@ -178,6 +178,7 @@ document
         resultsDiv
       );
       displayResults(data.tvshows, "TV Show - Streaming Only", resultsDiv);
+      displayResults(data.torrents, "Torrents", resultsDiv);
       displayResults(data.subtitles, "Subtitles", resultsDiv);
     } catch (error) {
       loader.style.display = "none"; // Hide loader

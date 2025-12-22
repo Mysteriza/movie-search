@@ -13,11 +13,16 @@
         "https://seriesonlinehd.net/search/{}",
         "https://hydrahd.me/index.php?menu=search&query={}",
         "https://uflix.cc/search?keyword={}",
-        "https://ww73.pencurimovie.bond/?s={}"
+        "https://ww73.pencurimovie.bond/?s={}",
+        "https://vertexmovies.com/search?q={}",
+        "https://snowstream.vercel.app/search?q={}"
     ],
     "tvshow_templates": [
         "https://www.todaytvseries1.com/search-series?searchword={}",
         "https://tvshows.ac/search/{}"
+    ],
+    "torrent_templates": [
+        "https://ext.to/browse/?q={}"
     ],
     "subtitle_templates": [
         "https://subsource.net/search?q={}",

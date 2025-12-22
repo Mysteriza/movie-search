@@ -6,8 +6,8 @@ You can try it in [Movie Search](https://movie-search.koyeb.app/)
 
 ## Key Features
 
-- ✅ **Categorized Platforms**: Organized by Download, TV Show Download, Streaming, TV Shows, and Subtitles
-- ✅ **12 Streaming Sites**: Pahe, Driverays, Batchindo, idlix, Moviepire, Nunflix, Series Online HD, HydraHD, uFlix, Pencurimovie, Today TV Series, TV Shows
+- ✅ **Categorized Platforms**: Organized by Download, TV Show Download, Streaming, TV Shows, Torrents, and Subtitles
+- ✅ **15 Streaming Sites**: Pahe, Driverays, Batchindo, Idlix, Moviepire, Nunflix, Series Online HD, HydraHD, uFlix, Pencurimovie, Vertexmovies, Snowstream, Today TV Series, TV Shows, ExtraTorrent
 - ✅ **Smart URL Encoding**: Automatic removal of special characters to prevent firewall blocks
 - ✅ **Year-based Search**: Autocomplete shows movie year to distinguish similar titles
 - ✅ **One-Click Access**: Individual Visit buttons for direct access to each streaming site
@@ -93,8 +93,16 @@ You can try it in [Movie Search](https://movie-search.koyeb.app/)
 - Rate limiting enabled to prevent abuse
 - Caching implemented to reduce API calls
 
-## Screenshot
+## Screenshots
 
-![image](https://github.com/user-attachments/assets/8cfa4b07-d5f2-41f2-bf2d-a3c82683fce9)
-![image](https://github.com/user-attachments/assets/8c0d385b-396b-4f1b-a1b1-6be1612bb019)
-![image](https://github.com/user-attachments/assets/f315b7cd-8b3b-4d0e-a979-0dcc98eb6381)
+### Main Page
+
+![Main Page](screenshots/mainpage-view.png)
+
+### Desktop Result View
+
+![Desktop Result View](screenshots/desktop-result-view.png)
+
+### Mobile View
+
+![Mobile View](screenshots/mobile-view.png)
