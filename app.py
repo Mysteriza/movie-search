@@ -113,8 +113,20 @@ def generate_links(movie_title, templates):
     # Remove quotes, replace colons with spaces, and collapse multiple spaces into one
     cleaned_title = movie_title.replace("'", "").replace('"', "").replace(":", " ")
     cleaned_title = " ".join(cleaned_title.split())
-    encoded_title = urllib.parse.quote(cleaned_title, safe="")
-    return [template.format(encoded_title) for template in templates]
+    
+    links = []
+    for template in templates:
+        if "seriesonlinehd.net" in template:
+            # Special handling for SeriesOnlineHD: lowercase and kebab-case
+            formatted_title = cleaned_title.replace(" ", "-").lower()
+            encoded_title = urllib.parse.quote(formatted_title, safe="")
+            links.append(template.format(encoded_title))
+        else:
+            # Standard handling
+            encoded_title = urllib.parse.quote(cleaned_title, safe="")
+            links.append(template.format(encoded_title))
+            
+    return links
 
 
 def extract_website_name(url):
