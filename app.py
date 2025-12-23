@@ -38,7 +38,7 @@ cache = Cache(
     app,
     config={
         "CACHE_TYPE": "SimpleCache",
-        "CACHE_DEFAULT_TIMEOUT": 300,  # 5 minutes cache
+        "CACHE_DEFAULT_TIMEOUT": 3600,  # 1 hour cache
     },
 )
 
@@ -110,7 +110,9 @@ def load_templates():
 
 # Generate links based on templates using the original input
 def generate_links(movie_title, templates):
-    cleaned_title = movie_title.replace("'", "").replace('"', "").replace("'", "")
+    # Remove quotes, replace colons with spaces, and collapse multiple spaces into one
+    cleaned_title = movie_title.replace("'", "").replace('"', "").replace(":", " ")
+    cleaned_title = " ".join(cleaned_title.split())
     encoded_title = urllib.parse.quote(cleaned_title, safe="")
     return [template.format(encoded_title) for template in templates]
 
@@ -130,10 +132,13 @@ def extract_website_name(url):
         "uflix.cc": "uFlix",
         "pencurimovie.bond": "Pencurimovie",
         "vertexmovies.com": "Vertexmovies",
-        "snowstream.vercel.app": "Snowstream",
         "ext.to": "ExtraTorrent",
         "subdl.com": "SubDL",
         "subsource.net": "Subsource",
+        "emnexmovies.tech": "EmnexMovies",
+        "showbox.media": "Showbox",
+        "donkey.to": "Donkey",
+        "ptflix.cc": "Ptflix",
     }
 
     from urllib.parse import urlparse

@@ -1,7 +1,9 @@
 {
     "download_templates": [
         "https://pahe.ink/?s={}",
-        "https://130.185.118.151/?s={}&post_type=post"
+        "https://130.185.118.151/?s={}&post_type=post",
+        "https://emnexmovies.tech/#/search?q={}&page=1&perPage=12",
+        "https://www.showbox.media/search?keyword={}"
     ],
     "tvshow_download_templates": [
         "https://batch.moe/?s={}"
@@ -15,7 +17,8 @@
         "https://uflix.cc/search?keyword={}",
         "https://ww73.pencurimovie.bond/?s={}",
         "https://vertexmovies.com/search?q={}",
-        "https://snowstream.vercel.app/search?q={}"
+        "https://donkey.to/media/search?query={}",
+        "https://ptflix.cc/?s={}"
     ],
     "tvshow_templates": [
         "https://www.todaytvseries1.com/search-series?searchword={}",

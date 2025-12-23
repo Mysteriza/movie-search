@@ -186,6 +186,16 @@ document
     }
   });
 
+// Helper to get icons for categories
+function getCategoryIcon(title) {
+  const lowerTitle = title.toLowerCase();
+  if (lowerTitle.includes("download")) return "⬇️";
+  if (lowerTitle.includes("streaming")) return "📺";
+  if (lowerTitle.includes("torrent")) return "🧲";
+  if (lowerTitle.includes("subtitle")) return "📝";
+  return "🎬";
+}
+
 // Function to display results in tables
 function displayResults(links, title, container) {
   if (links.length === 0) {
@@ -197,7 +207,8 @@ function displayResults(links, title, container) {
   sectionDiv.className = "results-section";
 
   const heading = document.createElement("h3");
-  heading.textContent = title;
+  const icon = getCategoryIcon(title);
+  heading.innerHTML = `${icon} ${title}`;
   sectionDiv.appendChild(heading);
 
   const table = document.createElement("table");
