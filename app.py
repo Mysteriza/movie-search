@@ -12,19 +12,14 @@ from flask_cors import CORS
 from flask_compress import Compress
 import logging
 
-# Load environment variables from .env
 load_dotenv()
 
-# Initialize Flask app
 app = Flask(__name__)
 
-# Configure CORS (only for API endpoints)
 CORS(app, resources={r"/suggest": {"origins": "*"}, r"/search": {"origins": "*"}})
 
-# Initialize compression
 Compress(app)
 
-# Configure logging
 if os.getenv("FLASK_ENV") == "production":
     logging.basicConfig(
         level=logging.INFO,
@@ -33,16 +28,14 @@ if os.getenv("FLASK_ENV") == "production":
 else:
     logging.basicConfig(level=logging.DEBUG)
 
-# Initialize cache
 cache = Cache(
     app,
     config={
         "CACHE_TYPE": "SimpleCache",
-        "CACHE_DEFAULT_TIMEOUT": 3600,  # 1 hour cache
+        "CACHE_DEFAULT_TIMEOUT": 3600,
     },
 )
 
-# Initialize rate limiter
 limiter = Limiter(
     get_remote_address,
     app=app,
@@ -50,50 +43,11 @@ limiter = Limiter(
     storage_uri="memory://",
 )
 
-# Initialize Talisman for HTTPS enforcement (disable in development)
 if os.getenv("FLASK_ENV") != "development":
-    Talisman(app, content_security_policy=None)  # CSP handled manually below
+    Talisman(app, content_security_policy=None)
 
 
-# Security headers middleware
-@app.after_request
-def set_security_headers(response):
-    """Add security headers to every response"""
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "DENY"
-    response.headers["X-XSS-Protection"] = "1; mode=block"
-    response.headers["Strict-Transport-Security"] = (
-        "max-age=31536000; includeSubDomains"
-    )
-    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-    response.headers["Content-Security-Policy"] = (
-        "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://www.omdbapi.com"
-    )
-    return response
-
-
-# Error handlers
-@app.errorhandler(404)
-def not_found(e):
-    """Handle 404 errors"""
-    return jsonify({"error": "Resource not found"}), 404
-
-
-@app.errorhandler(500)
-def internal_error(e):
-    """Handle 500 errors"""
-    app.logger.error(f"Internal server error: {e}")
-    return jsonify({"error": "Internal server error"}), 500
-
-
-@app.errorhandler(429)
-def ratelimit_handler(e):
-    """Handle rate limit errors"""
-    return jsonify({"error": "Rate limit exceeded. Please try again later."}), 429
-
-
-# Load templates from JSON file
-def load_templates():
+def load_templates_from_file():
     try:
         with open("templates.json", "r") as file:
             return json.load(file)
@@ -108,12 +62,50 @@ def load_templates():
         }
 
 
+TEMPLATES_CACHE = load_templates_from_file()
+
+
+def load_templates():
+    return TEMPLATES_CACHE
+
+
+@app.after_request
+def set_security_headers(response):
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = (
+        "max-age=31536000; includeSubDomains"
+    )
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://www.omdbapi.com"
+    )
+    return response
+
+
+@app.errorhandler(404)
+def not_found(e):
+    return jsonify({"error": "Resource not found"}), 404
+
+
+@app.errorhandler(500)
+def internal_error(e):
+    app.logger.error(f"Internal server error: {e}")
+    return jsonify({"error": "Internal server error"}), 500
+
+
+@app.errorhandler(429)
+def ratelimit_handler(e):
+    return jsonify({"error": "Rate limit exceeded. Please try again later."}), 429
+
+
 # Generate links based on templates using the original input
 def generate_links(movie_title, templates):
     # Remove quotes, replace colons with spaces, and collapse multiple spaces into one
     cleaned_title = movie_title.replace("'", "").replace('"', "").replace(":", " ")
     cleaned_title = " ".join(cleaned_title.split())
-    
+
     links = []
     for template in templates:
         if "seriesonlinehd.net" in template:
@@ -125,7 +117,7 @@ def generate_links(movie_title, templates):
             # Standard handling
             encoded_title = urllib.parse.quote(cleaned_title, safe="")
             links.append(template.format(encoded_title))
-            
+
     return links
 
 
@@ -190,9 +182,9 @@ def health():
     return jsonify({"status": "healthy"}), 200
 
 
-# Suggest route (Autocomplete using OMDb API)
 @app.route("/suggest", methods=["GET"])
 @limiter.limit("30 per minute")
+@cache.cached(timeout=300, query_string=True)
 def suggest():
     query = request.args.get("q", "").strip()
 
@@ -210,14 +202,18 @@ def suggest():
         app.logger.error("OMDB_API_KEY not found")
         return jsonify([])
 
-    url = f"http://www.omdbapi.com/?s={query}&apikey={omdb_api_key}"
+    url = f"https://www.omdbapi.com/?s={query}&apikey={omdb_api_key}"
     try:
         response = requests.get(url, timeout=5)
         data = response.json()
         app.logger.info(f"OMDb Response for '{query}': {data.get('Response')}")
         if data.get("Response") == "True":
             suggestions = [
-                f"{movie['Title']} ({movie.get('Year', 'N/A')})"
+                {
+                    "title": movie.get("Title", "Unknown"),
+                    "year": movie.get("Year", "N/A"),
+                    "poster": movie.get("Poster", "N/A"),
+                }
                 for movie in data.get("Search", [])
             ]
             return jsonify(suggestions[:10])
@@ -273,27 +269,26 @@ def search():
     # Initialize movie_details as empty by default
     movie_details = {}
 
-    # Fetch movie details from OMDb API using the original input
     omdb_api_key = os.getenv("OMDB_API_KEY")
     if omdb_api_key:
-        omdb_url = f"http://www.omdbapi.com/?t={urllib.parse.quote_plus(movie_title)}&apikey={omdb_api_key}"
+        omdb_url = f"https://www.omdbapi.com/?t={urllib.parse.quote_plus(movie_title)}&apikey={omdb_api_key}"
         if movie_year:
             omdb_url += f"&y={movie_year}"
         try:
             omdb_response = requests.get(omdb_url, timeout=5)
             omdb_data = omdb_response.json()
             if omdb_data.get("Response") == "True":
-                # Extract relevant movie details if found
                 runtime = omdb_data.get("Runtime", "N/A")
-                converted_runtime = convert_runtime(runtime)  # Convert runtime
+                converted_runtime = convert_runtime(runtime)
 
                 movie_details = {
                     "Title": omdb_data.get("Title"),
                     "Released": omdb_data.get("Released"),
-                    "Runtime": converted_runtime,  # Use converted runtime
+                    "Runtime": converted_runtime,
                     "Genre": omdb_data.get("Genre"),
                     "Director": omdb_data.get("Director"),
                     "Plot": omdb_data.get("Plot"),
+                    "Poster": omdb_data.get("Poster", "N/A"),
                     "Ratings": next(
                         (
                             rating["Value"]

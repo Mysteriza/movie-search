@@ -6,6 +6,9 @@ You can try it in [Movie Search](https://movie-search.koyeb.app/)
 
 ## Key Features
 
+- ✅ **Movie Poster Thumbnails**: Autocomplete suggestions display movie posters for easy identification
+- ✅ **Poster in Search Results**: Movie details include poster image alongside film information
+- ✅ **Custom Autocomplete**: Rich dropdown with keyboard navigation (arrow keys, enter, escape)
 - ✅ **Categorized Platforms**: Organized by Download, TV Show Download, Streaming, TV Shows, Torrents, and Subtitles
 - ✅ **15 Streaming Sites**: Pahe, Driverays, Batchindo, Idlix, Moviepire, Nunflix, Series Online HD, HydraHD, uFlix, Pencurimovie, Vertexmovies, Snowstream, Today TV Series, TV Shows, ExtraTorrent
 - ✅ **Smart URL Encoding**: Automatic removal of special characters to prevent firewall blocks
@@ -17,8 +20,8 @@ You can try it in [Movie Search](https://movie-search.koyeb.app/)
 - ✅ **Modern Dark UI**: Professional gradient design with smooth animations
 - ✅ **Fully Responsive**: Optimized for desktop, tablet, and mobile devices
 - ✅ **Rate Limiting**: Protection against abuse (10 searches/min, 30 suggestions/min)
-- ✅ **Smart Caching**: Faster responses with 5-minute intelligent caching
-- ✅ **Security Headers**: Production-grade security implementation
+- ✅ **Smart Caching**: Faster responses with intelligent caching (templates cached at startup, suggestions cached for 5 minutes)
+- ✅ **Security Headers**: Production-grade security implementation with HTTPS API calls
 
 ## How to Run Locally
 

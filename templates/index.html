@@ -14,12 +14,14 @@
                 <p class="subtitle">Your one-stop solution to find movies across
                     12+ streaming platforms</p>
 
-                <form id="search-form">
-                    <input type="text" id="movie-title" list="movie-suggestions"
-                        placeholder="Enter movie title..." required>
-                    <datalist id="movie-suggestions"></datalist>
-                    <button type="submit">Search</button>
-                </form>
+                <form id="search-form" autocomplete="off">
+                <div class="search-wrapper">
+                    <input type="text" id="movie-title"
+                        placeholder="Enter movie title..." required autocomplete="off">
+                    <div id="autocomplete-dropdown" class="autocomplete-dropdown"></div>
+                </div>
+                <button type="submit">Search</button>
+            </form>
 
                 <div id="welcome-content">
                     <div class="hero-section">
