@@ -25,7 +25,7 @@ def extract_website_name(url: str) -> str:
         "batch.moe": "Batchindo",
         "hydrahd.me": "HydraHD",
         "moviepire.net": "Moviepire",
-        "nunflix.li": "Nunflix",
+        "cinebytv.com": "Cineby TV",
         "pahe.ink": "Pahe",
         "seriesonlinehd.net": "Series Online HD",
         "todaytvseries1.com": "Today TV Series",

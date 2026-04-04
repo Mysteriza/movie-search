@@ -2,7 +2,7 @@
     "download_templates": [
         "https://pahe.ink/?s={}",
         "https://130.185.118.151/?s={}&post_type=post",
-        "https://emnexmovies.tech/#/search?q={}&page=1&perPage=12",
+        "https://emnexmovies.tech/search?q={}&page=1&perPage=12",
         "https://www.showbox.media/search?keyword={}"
     ],
     "tvshow_download_templates": [
@@ -11,7 +11,7 @@
     "streaming_templates": [
         "https://tv11.idlixku.com/search/{}",
         "https://moviepire.net/search?q={}",
-        "https://nunflix.li/search?text={}",
+        "https://cinebytv.com/search?text={}",
         "https://seriesonlinehd.net/search/{}",
         "https://hydrahd.me/index.php?menu=search&query={}",
         "https://uflix.cc/search?keyword={}",
