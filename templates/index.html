@@ -10,18 +10,27 @@
     <body>
         <div class="wrapper">
             <div class="container">
-                <h1>Movie Link Generator</h1>
+                <h1><a href="/" class="home-link">Movie Link Generator</a></h1>
                 <p class="subtitle">Your one-stop solution to find movies across
                     12+ streaming platforms</p>
 
                 <form id="search-form" autocomplete="off">
-                <div class="search-wrapper">
-                    <input type="text" id="movie-title"
-                        placeholder="Enter movie title..." required autocomplete="off">
-                    <div id="autocomplete-dropdown" class="autocomplete-dropdown"></div>
+                    <div class="search-wrapper">
+                        <input type="text" id="movie-title"
+                            placeholder="Enter movie title..." required autocomplete="off">
+                        <div id="autocomplete-dropdown" class="autocomplete-dropdown"></div>
+                    </div>
+                    <button type="submit" id="search-btn">Search</button>
+                </form>
+
+                <div id="trending-movies-section" class="trending-section" style="display: none;">
+                    <h2>Trending Movies</h2>
+                    <div class="trending-scroll-container">
+                        <div id="trending-movies-list" class="trending-list">
+                            <!-- Movie cards will be loaded here -->
+                        </div>
+                    </div>
                 </div>
-                <button type="submit">Search</button>
-            </form>
 
                 <div id="welcome-content">
                     <div class="hero-section">
@@ -129,7 +138,7 @@
 
                 <div id="movie-details"></div>
                 <div id="results"></div>
-                <div class="loader"></div>
+                <div class="loader" id="main-loader"></div>
             </div>
             <footer>
                 <p>&copy; <span id="current-year"></span> Mysteriza |

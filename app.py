@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, jsonify
-import json
 import urllib.parse
 import requests
 import os
@@ -12,12 +11,14 @@ from flask_cors import CORS
 from flask_compress import Compress
 import logging
 
+from utils.helpers import convert_runtime
+from services.movie_service import get_all_movie_links
+
 load_dotenv()
 
 app = Flask(__name__)
 
-CORS(app, resources={r"/suggest": {"origins": "*"}, r"/search": {"origins": "*"}})
-
+CORS(app, resources={r"/suggest": {"origins": "*"}, r"/search": {"origins": "*"}, r"/api/trending": {"origins": "*"}})
 Compress(app)
 
 if os.getenv("FLASK_ENV") == "production":
@@ -47,39 +48,19 @@ if os.getenv("FLASK_ENV") != "development":
     Talisman(app, content_security_policy=None)
 
 
-def load_templates_from_file():
-    try:
-        with open("templates.json", "r") as file:
-            return json.load(file)
-    except FileNotFoundError:
-        return {
-            "download_templates": [],
-            "tvshow_download_templates": [],
-            "streaming_templates": [],
-            "tvshow_templates": [],
-            "torrent_templates": [],
-            "subtitle_templates": [],
-        }
-
-
-TEMPLATES_CACHE = load_templates_from_file()
-
-
-def load_templates():
-    return TEMPLATES_CACHE
-
-
 @app.after_request
 def set_security_headers(response):
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-XSS-Protection"] = "1; mode=block"
-    response.headers["Strict-Transport-Security"] = (
-        "max-age=31536000; includeSubDomains"
-    )
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Content-Security-Policy"] = (
-        "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://www.omdbapi.com"
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline'; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data: https:; "
+        "connect-src 'self' https://www.omdbapi.com"
     )
     return response
 
@@ -100,86 +81,49 @@ def ratelimit_handler(e):
     return jsonify({"error": "Rate limit exceeded. Please try again later."}), 429
 
 
-# Generate links based on templates using the original input
-def generate_links(movie_title, templates):
-    # Remove quotes, replace colons with spaces, and collapse multiple spaces into one
-    cleaned_title = movie_title.replace("'", "").replace('"', "").replace(":", " ")
-    cleaned_title = " ".join(cleaned_title.split())
-
-    links = []
-    for template in templates:
-        if "seriesonlinehd.net" in template:
-            # Special handling for SeriesOnlineHD: lowercase and kebab-case
-            formatted_title = cleaned_title.replace(" ", "-").lower()
-            encoded_title = urllib.parse.quote(formatted_title, safe="")
-            links.append(template.format(encoded_title))
-        else:
-            # Standard handling
-            encoded_title = urllib.parse.quote(cleaned_title, safe="")
-            links.append(template.format(encoded_title))
-
-    return links
-
-
-def extract_website_name(url):
-    website_mapping = {
-        "130.185.118.151": "Driverays",
-        "batch.moe": "Batchindo",
-        "hydrahd.me": "HydraHD",
-        "moviepire.net": "Moviepire",
-        "nunflix.li": "Nunflix",
-        "pahe.ink": "Pahe",
-        "seriesonlinehd.net": "Series Online HD",
-        "todaytvseries1.com": "Today TV Series",
-        "tv11.idlixku.com": "Idlix",
-        "tvshows.ac": "TV Shows",
-        "uflix.cc": "uFlix",
-        "pencurimovie.bond": "Pencurimovie",
-        "vertexmovies.com": "Vertexmovies",
-        "ext.to": "ExtraTorrent",
-        "subdl.com": "SubDL",
-        "subsource.net": "Subsource",
-        "emnexmovies.tech": "EmnexMovies",
-        "showbox.media": "Showbox",
-        "donkey.to": "Donkey",
-        "ptflix.cc": "Ptflix",
-    }
-
-    from urllib.parse import urlparse
-
-    parsed = urlparse(url)
-    domain = parsed.netloc or parsed.path
-    domain = domain.replace("www.", "")
-
-    for key, value in website_mapping.items():
-        if key in domain:
-            return value
-
-    parts = domain.split(".")
-    if len(parts) >= 2:
-        return parts[0].capitalize()
-    return domain.capitalize()
-
-
-def prepare_link_data(links):
-    result = []
-    for link in links:
-        website_name = extract_website_name(link)
-        result.append({"name": website_name, "url": link})
-    return result
-
-
-# Home route
 @app.route("/")
 def index():
     return render_template("index.html")
 
 
-# Health check endpoint for Koyeb
 @app.route("/health")
 def health():
     """Health check endpoint for monitoring"""
     return jsonify({"status": "healthy"}), 200
+
+
+@app.route("/api/trending", methods=["GET"])
+@cache.cached(timeout=3600)
+def trending():
+    tmdb_api_key = os.getenv("TMDB_API_KEY")
+    if not tmdb_api_key:
+        app.logger.error("TMDB_API_KEY not found")
+        return jsonify([])
+
+    url = f"https://api.themoviedb.org/3/trending/movie/week?api_key={tmdb_api_key}"
+    try:
+        response = requests.get(url, timeout=5)
+        data = response.json()
+        if "results" in data:
+            movies = []
+            for item in data["results"][:15]:
+                title = item.get("title")
+                poster_path = item.get("poster_path")
+                release_date = item.get("release_date", "")
+                year = release_date.split("-")[0] if release_date else "N/A"
+                if title and poster_path:
+                    movies.append({
+                        "title": title,
+                        "year": year,
+                        "poster": f"https://image.tmdb.org/t/p/w300{poster_path}"
+                    })
+            return jsonify(movies)
+        else:
+            app.logger.warning(f"TMDb error: {data}")
+            return jsonify([])
+    except Exception as e:
+        app.logger.error(f"Error fetching trending: {e}")
+        return jsonify([])
 
 
 @app.route("/suggest", methods=["GET"])
@@ -188,10 +132,7 @@ def health():
 def suggest():
     query = request.args.get("q", "").strip()
 
-    if not query:
-        return jsonify([])
-
-    if len(query) > 100:
+    if not query or len(query) > 100:
         return jsonify([])
 
     if not all(c.isalnum() or c.isspace() or c in "'-:.,!?" for c in query):
@@ -218,58 +159,31 @@ def suggest():
             ]
             return jsonify(suggestions[:10])
         else:
-            app.logger.warning(
-                f"OMDb returned False for query: {query}, Error: {data.get('Error')}"
-            )
+            app.logger.warning(f"OMDb returned False for query: {query}, Error: {data.get('Error')}")
             return jsonify([])
     except Exception as e:
         app.logger.error(f"Error fetching suggestions: {e}")
         return jsonify([])
 
 
-# Helper function to convert runtime from minutes to hours and minutes
-def convert_runtime(runtime):
-    """
-    Convert runtime from minutes to hours and minutes format.
-    Example: "169 min" -> "169 min (2h 8m)"
-    :param runtime: Runtime string from OMDB API (e.g., "169 min").
-    :return: Converted runtime string (e.g., "169 min (2h 8m)").
-    """
-    try:
-        # Extract the number of minutes from the runtime string
-        minutes = int(runtime.split()[0])
-        hours = minutes // 60  # Calculate hours
-        remaining_minutes = minutes % 60  # Calculate remaining minutes
-        return f"{minutes} min ({hours}h {remaining_minutes}m)"
-    except (ValueError, AttributeError):
-        return runtime  # Return original runtime if conversion fails
-
-
-# Search route
 @app.route("/search", methods=["POST"])
 @limiter.limit("10 per minute")
 def search():
     movie_title = request.form.get("movie_title", "").strip()
     movie_year = request.form.get("movie_year", "").strip()
 
-    # Input validation
     if not movie_title:
         return jsonify({"error": "Please enter a movie title."}), 400
-
     if len(movie_title) > 100:
         return jsonify({"error": "Movie title too long."}), 400
-
     if movie_year and not movie_year.isdigit():
         return jsonify({"error": "Invalid year format."}), 400
-
-    # Sanitize input
     if not all(c.isalnum() or c.isspace() or c in "'-:.,!?" for c in movie_title):
         return jsonify({"error": "Invalid characters in movie title."}), 400
 
-    # Initialize movie_details as empty by default
     movie_details = {}
-
     omdb_api_key = os.getenv("OMDB_API_KEY")
+    
     if omdb_api_key:
         omdb_url = f"https://www.omdbapi.com/?t={urllib.parse.quote_plus(movie_title)}&apikey={omdb_api_key}"
         if movie_year:
@@ -279,12 +193,10 @@ def search():
             omdb_data = omdb_response.json()
             if omdb_data.get("Response") == "True":
                 runtime = omdb_data.get("Runtime", "N/A")
-                converted_runtime = convert_runtime(runtime)
-
                 movie_details = {
                     "Title": omdb_data.get("Title"),
                     "Released": omdb_data.get("Released"),
-                    "Runtime": converted_runtime,
+                    "Runtime": convert_runtime(runtime),
                     "Genre": omdb_data.get("Genre"),
                     "Director": omdb_data.get("Director"),
                     "Plot": omdb_data.get("Plot"),
@@ -301,37 +213,13 @@ def search():
         except Exception as e:
             app.logger.error(f"Error fetching OMDb data: {e}")
 
-    # Generate links based on templates using the original input
-    templates = load_templates()
-    download_links = generate_links(movie_title, templates["download_templates"])
-    tvshow_download_links = generate_links(
-        movie_title, templates["tvshow_download_templates"]
-    )
-    streaming_links = generate_links(movie_title, templates["streaming_templates"])
-    tvshow_links = generate_links(movie_title, templates["tvshow_templates"])
-    torrent_links = generate_links(movie_title, templates["torrent_templates"])
-    subtitle_links = generate_links(movie_title, templates["subtitle_templates"])
-
-    download_link_data = prepare_link_data(download_links)
-    tvshow_download_link_data = prepare_link_data(tvshow_download_links)
-    streaming_link_data = prepare_link_data(streaming_links)
-    tvshow_link_data = prepare_link_data(tvshow_links)
-    torrent_link_data = prepare_link_data(torrent_links)
-    subtitle_link_data = prepare_link_data(subtitle_links)
-
-    return jsonify(
-        {
-            "movie_details": movie_details or {},
-            "downloads": download_link_data,
-            "tvshow_downloads": tvshow_download_link_data,
-            "streaming": streaming_link_data,
-            "tvshows": tvshow_link_data,
-            "torrents": torrent_link_data,
-            "subtitles": subtitle_link_data,
-        }
-    )
+    links_dict = get_all_movie_links(movie_title)
+    
+    return jsonify({
+        "movie_details": movie_details,
+        **links_dict
+    })
 
 
-# Run the app
 if __name__ == "__main__":
     app.run(debug=True)
