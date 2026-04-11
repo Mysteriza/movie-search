@@ -9,7 +9,7 @@
         "https://batch.moe/?s={}"
     ],
     "streaming_templates": [
-        "https://tv11.idlixku.com/search/{}",
+        "https://z1.idlixku.com/search?q={}",
         "https://moviepire.net/search?q={}",
         "https://cinebytv.com/search?text={}",
         "https://seriesonlinehd.net/search/{}",

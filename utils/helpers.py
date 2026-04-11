@@ -1,5 +1,6 @@
 from urllib.parse import urlparse
 
+
 def convert_runtime(runtime: str) -> str:
     """
     Convert runtime from minutes to hours and minutes format.
@@ -29,7 +30,7 @@ def extract_website_name(url: str) -> str:
         "pahe.ink": "Pahe",
         "seriesonlinehd.net": "Series Online HD",
         "todaytvseries1.com": "Today TV Series",
-        "tv11.idlixku.com": "Idlix",
+        "z1.idlixku.com": "Idlix",
         "tvshows.ac": "TV Shows",
         "uflix.cc": "uFlix",
         "pencurimovie.bond": "Pencurimovie",
