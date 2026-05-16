@@ -2,7 +2,6 @@
     "download_templates": [
         "https://pahe.ink/?s={}",
         "https://130.185.118.151/?s={}&post_type=post",
-        "https://emnexmovies.tech/search?q={}&page=1&perPage=12",
         "https://www.showbox.media/search?keyword={}"
     ],
     "tvshow_download_templates": [

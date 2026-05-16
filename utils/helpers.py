@@ -38,7 +38,6 @@ def extract_website_name(url: str) -> str:
         "ext.to": "ExtraTorrent",
         "subdl.com": "SubDL",
         "subsource.net": "Subsource",
-        "emnexmovies.tech": "EmnexMovies",
         "showbox.media": "Showbox",
         "donkey.to": "Donkey",
         "ptflix.cc": "Ptflix",
