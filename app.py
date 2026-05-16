@@ -1,33 +1,36 @@
-from flask import Flask, render_template, request, jsonify
-import urllib.parse
-import requests
+import hashlib
+import logging
 import os
+import secrets
+import urllib.parse
+
+import requests
 from dotenv import load_dotenv
+from flask import Flask, jsonify, render_template, request
+from flask_caching import Cache
+from flask_compress import Compress
+from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_talisman import Talisman
-from flask_caching import Cache
-from flask_cors import CORS
-from flask_compress import Compress
-import logging
 
-from utils.helpers import convert_runtime
 from services.movie_service import get_all_movie_links
+from utils.helpers import convert_runtime
 
 load_dotenv()
 
 app = Flask(__name__)
+app.secret_key = os.getenv("SECRET_KEY", secrets.token_hex(32))
 
 CORS(app, resources={r"/suggest": {"origins": "*"}, r"/search": {"origins": "*"}, r"/api/trending": {"origins": "*"}})
 Compress(app)
 
-if os.getenv("FLASK_ENV") == "production":
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]",
-    )
-else:
-    logging.basicConfig(level=logging.DEBUG)
+flask_env = os.getenv("FLASK_ENV", "production")
+
+logging.basicConfig(
+    level=logging.INFO if flask_env == "production" else logging.DEBUG,
+    format="%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]",
+)
 
 cache = Cache(
     app,
@@ -44,8 +47,23 @@ limiter = Limiter(
     storage_uri="memory://",
 )
 
-if os.getenv("FLASK_ENV") != "development":
-    Talisman(app, content_security_policy=None)
+csp = {
+    "default-src": "'self'",
+    "script-src": "'self' 'unsafe-inline'",
+    "style-src": "'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src": "'self' https://fonts.gstatic.com",
+    "img-src": "'self' data: https:",
+    "connect-src": "'self' https://www.omdbapi.com",
+}
+
+if flask_env != "development":
+    Talisman(
+        app,
+        content_security_policy=csp,
+        force_https=True,
+        strict_transport_security=True,
+        session_cookie_secure=True,
+    )
 
 
 @app.after_request
@@ -53,15 +71,8 @@ def set_security_headers(response):
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-XSS-Protection"] = "1; mode=block"
-    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-    response.headers["Content-Security-Policy"] = (
-        "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline'; "
-        "style-src 'self' 'unsafe-inline'; "
-        "img-src 'self' data: https:; "
-        "connect-src 'self' https://www.omdbapi.com"
-    )
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
     return response
 
 
@@ -181,6 +192,12 @@ def search():
     if not all(c.isalnum() or c.isspace() or c in "'-:.,!?" for c in movie_title):
         return jsonify({"error": "Invalid characters in movie title."}), 400
 
+    cache_key = f"search_result:{hashlib.md5(f'{movie_title}|{movie_year}'.encode()).hexdigest()}"
+    cached = cache.get(cache_key)
+    if cached is not None:
+        app.logger.info(f"Cache hit for: {movie_title} ({movie_year})")
+        return jsonify(cached)
+
     movie_details = {}
     omdb_api_key = os.getenv("OMDB_API_KEY")
     
@@ -215,11 +232,13 @@ def search():
 
     links_dict = get_all_movie_links(movie_title)
     
-    return jsonify({
-        "movie_details": movie_details,
-        **links_dict
-    })
+    result = {"movie_details": movie_details, **links_dict}
+    cache.set(cache_key, result, timeout=259200)
+    app.logger.info(f"Cached result for: {movie_title} ({movie_year})")
+    
+    return jsonify(result)
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    debug_mode = os.getenv("FLASK_ENV", "production") == "development"
+    app.run(debug=debug_mode)

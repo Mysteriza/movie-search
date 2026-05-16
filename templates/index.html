@@ -3,7 +3,24 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Movie Link Generator</title>
+        <title>Movie Link Generator - Find Movies on 15+ Platforms</title>
+        <meta name="description" content="Search for any movie and instantly get direct links to watch or download from 15+ streaming, download, torrent, and subtitle platforms. Save time finding all available sources in one place!">
+        <meta name="robots" content="index, follow">
+
+        <meta property="og:title" content="Movie Link Generator">
+        <meta property="og:description" content="Search for any movie and instantly get direct links to watch or download from 15+ platforms.">
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="https://movie-search.koyeb.app/">
+        <meta property="og:image" content="/static/favicon.png">
+
+        <meta name="twitter:card" content="summary">
+        <meta name="twitter:title" content="Movie Link Generator">
+        <meta name="twitter:description" content="Find movies across 15+ streaming, download, torrent, and subtitle platforms instantly.">
+
+        <link rel="canonical" href="https://movie-search.koyeb.app/">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="/static/style.css">
         <link rel="icon" type="image/png" href="/static/favicon.png">
     </head>
@@ -14,13 +31,18 @@
                 <p class="subtitle">Your one-stop solution to find movies across
                     12+ streaming platforms</p>
 
-                <form id="search-form" autocomplete="off">
+                <form id="search-form" autocomplete="off" role="search" aria-label="Search for movies">
                     <div class="search-wrapper">
+                        <label for="movie-title" class="sr-only">Movie title</label>
                         <input type="text" id="movie-title"
-                            placeholder="Enter movie title..." required autocomplete="off">
-                        <div id="autocomplete-dropdown" class="autocomplete-dropdown"></div>
+                            placeholder="Enter movie title..." required autocomplete="off"
+                            aria-label="Movie title" aria-expanded="false"
+                            aria-controls="autocomplete-dropdown" aria-autocomplete="list"
+                            role="combobox">
+                        <div id="autocomplete-dropdown" class="autocomplete-dropdown"
+                            role="listbox" aria-label="Search suggestions"></div>
                     </div>
-                    <button type="submit" id="search-btn">Search</button>
+                    <button type="submit" id="search-btn" aria-label="Search for movie">Search</button>
                 </form>
 
                 <div id="trending-movies-section" class="trending-section" style="display: none;">
@@ -135,9 +157,10 @@
                     </div>
                 </div>
 
+                <div id="status-message" class="sr-only" role="status" aria-live="polite"></div>
                 <div id="movie-details"></div>
-                <div id="results"></div>
-                <div class="loader" id="main-loader"></div>
+                <div id="results" aria-live="polite"></div>
+                <div class="loader" id="main-loader" role="status" aria-label="Loading results"></div>
             </div>
             <footer>
                 <p>&copy; <span id="current-year"></span> Mysteriza |

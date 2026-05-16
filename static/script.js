@@ -14,16 +14,19 @@
   const movieTitleInput = document.getElementById("movie-title");
   const autocompleteDropdown = document.getElementById("autocomplete-dropdown");
   const searchForm = document.getElementById("search-form");
+  const searchBtn = document.getElementById("search-btn");
   const resultsDiv = document.getElementById("results");
   const movieDetailsDiv = document.getElementById("movie-details");
   const loader = document.getElementById("main-loader");
   const welcomeContent = document.getElementById("welcome-content");
+  const statusMessage = document.getElementById("status-message");
   
   const trendingSection = document.getElementById("trending-movies-section");
   const trendingList = document.getElementById("trending-movies-list");
 
   let selectedIndex = -1;
   let currentSuggestions = [];
+  let isSearching = false;
 
   // --- Utility Functions ---
   const debounce = (func, delay) => {
@@ -79,6 +82,10 @@
   }
 
   // --- Autocomplete Feature ---
+  function setDropdownExpanded(expanded) {
+    movieTitleInput.setAttribute("aria-expanded", String(expanded));
+  }
+
   function renderDropdown(suggestions) {
     currentSuggestions = suggestions;
     selectedIndex = -1;
@@ -86,6 +93,7 @@
     if (suggestions.length === 0) {
       autocompleteDropdown.classList.remove("show");
       autocompleteDropdown.innerHTML = "";
+      setDropdownExpanded(false);
       return;
     }
 
@@ -95,7 +103,7 @@
             ? item.poster
             : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='60' viewBox='0 0 40 60'%3E%3Crect fill='%23333' width='40' height='60'/%3E%3Ctext x='20' y='35' text-anchor='middle' fill='%23666' font-size='24'%3E🎬%3C/text%3E%3C/svg%3E";
         return `
-        <div class="autocomplete-item" data-index="${index}">
+        <div class="autocomplete-item" data-index="${index}" role="option" aria-selected="false">
           <img src="${posterSrc}" alt="${item.title}" class="autocomplete-poster" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'40\\' height=\\'60\\' viewBox=\\'0 0 40 60\\'%3E%3Crect fill=\\'%23333\\' width=\\'40\\' height=\\'60\\'/%3E%3Ctext x=\\'20\\' y=\\'35\\' text-anchor=\\'middle\\' fill=\\'%23666\\' font-size=\\'24\\'%3E🎬%3C/text%3E%3C/svg%3E'">
           <div class="autocomplete-info">
             <span class="autocomplete-title">${item.title}</span>
@@ -106,6 +114,7 @@
       }).join("");
 
     autocompleteDropdown.classList.add("show");
+    setDropdownExpanded(true);
   }
 
   function selectItem(index) {
@@ -125,9 +134,11 @@
     items.forEach((item, index) => {
       if (index === selectedIndex) {
         item.classList.add("active");
+        item.setAttribute("aria-selected", "true");
         item.scrollIntoView({ block: "nearest" });
       } else {
         item.classList.remove("active");
+        item.setAttribute("aria-selected", "false");
       }
     });
   }
@@ -269,13 +280,20 @@
     }
   });
 
+  function setStatusMessage(msg) {
+    if (statusMessage) statusMessage.textContent = msg;
+  }
+
   searchForm.addEventListener("submit", async function (e) {
     e.preventDefault();
+    if (isSearching) return;
     autocompleteDropdown.classList.remove("show");
+    setDropdownExpanded(false);
 
     let movieTitle = movieTitleInput.value.trim();
     if (!movieTitle) {
-      alert("Please enter a movie title.");
+      setStatusMessage("Please enter a movie title.");
+      movieTitleInput.focus();
       return;
     }
 
@@ -292,6 +310,10 @@
     resultsDiv.innerHTML = "";
     movieDetailsDiv.innerHTML = "";
     loader.style.display = "block";
+    searchBtn.disabled = true;
+    searchBtn.textContent = "Searching...";
+    isSearching = true;
+    setStatusMessage(`Searching for ${movieTitle}...`);
 
     try {
       const response = await fetch("/search", {
@@ -301,14 +323,15 @@
       });
 
       const data = await response.json();
-      loader.style.display = "none";
 
       if (response.status === 429) {
-        resultsDiv.innerHTML = `<p class="error">Rate limit exceeded. Please try again later.</p>`;
+        resultsDiv.innerHTML = `<p class="error" role="alert">Rate limit exceeded. Please try again later.</p>`;
+        setStatusMessage("Rate limit exceeded. Please try again later.");
         return;
       }
       if (data.error) {
-        resultsDiv.innerHTML = `<p class="error">${data.error}</p>`;
+        resultsDiv.innerHTML = `<p class="error" role="alert">${data.error}</p>`;
+        setStatusMessage(`Search failed: ${data.error}`);
         return;
       }
 
@@ -320,9 +343,16 @@
       displayResults(data.tvshows, "TV Show - Streaming Only", resultsDiv);
       displayResults(data.torrents, "Torrents", resultsDiv);
       displayResults(data.subtitles, "Subtitles", resultsDiv);
+
+      setStatusMessage(`Found results for ${movieTitle}.`);
     } catch (error) {
+      resultsDiv.innerHTML = `<p class="error" role="alert">An error occurred while fetching results. Please try again.</p>`;
+      setStatusMessage("An error occurred while fetching results.");
+    } finally {
       loader.style.display = "none";
-      resultsDiv.innerHTML = `<p class="error">An error occurred while fetching results.</p>`;
+      searchBtn.disabled = false;
+      searchBtn.textContent = "Search";
+      isSearching = false;
     }
   });
 
