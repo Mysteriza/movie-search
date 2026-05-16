@@ -1,7 +1,9 @@
 import json
 import urllib.parse
-from typing import List, Dict, Any
+from typing import Dict, List
+
 from utils.helpers import extract_website_name
+
 
 def load_templates() -> Dict[str, List[str]]:
     """Load templates from file, returning a default structure if not found."""
@@ -18,7 +20,9 @@ def load_templates() -> Dict[str, List[str]]:
             "subtitle_templates": [],
         }
 
+
 TEMPLATES_CACHE = load_templates()
+
 
 def generate_links(movie_title: str, templates: List[str]) -> List[str]:
     """Generate links based on a list of template strings."""
@@ -37,17 +41,33 @@ def generate_links(movie_title: str, templates: List[str]) -> List[str]:
 
     return links
 
+
 def prepare_link_data(links: List[str]) -> List[Dict[str, str]]:
     """Format strings into dict objects with name and url."""
     return [{"name": extract_website_name(link), "url": link} for link in links]
 
+
 def get_all_movie_links(movie_title: str) -> Dict[str, List[Dict[str, str]]]:
     """Generate all categorized movie links for a given title."""
     return {
-        "downloads": prepare_link_data(generate_links(movie_title, TEMPLATES_CACHE.get("download_templates", []))),
-        "tvshow_downloads": prepare_link_data(generate_links(movie_title, TEMPLATES_CACHE.get("tvshow_download_templates", []))),
-        "streaming": prepare_link_data(generate_links(movie_title, TEMPLATES_CACHE.get("streaming_templates", []))),
-        "tvshows": prepare_link_data(generate_links(movie_title, TEMPLATES_CACHE.get("tvshow_templates", []))),
-        "torrents": prepare_link_data(generate_links(movie_title, TEMPLATES_CACHE.get("torrent_templates", []))),
-        "subtitles": prepare_link_data(generate_links(movie_title, TEMPLATES_CACHE.get("subtitle_templates", []))),
+        "downloads": prepare_link_data(
+            generate_links(movie_title, TEMPLATES_CACHE.get("download_templates", []))
+        ),
+        "tvshow_downloads": prepare_link_data(
+            generate_links(
+                movie_title, TEMPLATES_CACHE.get("tvshow_download_templates", [])
+            )
+        ),
+        "streaming": prepare_link_data(
+            generate_links(movie_title, TEMPLATES_CACHE.get("streaming_templates", []))
+        ),
+        "tvshows": prepare_link_data(
+            generate_links(movie_title, TEMPLATES_CACHE.get("tvshow_templates", []))
+        ),
+        "torrents": prepare_link_data(
+            generate_links(movie_title, TEMPLATES_CACHE.get("torrent_templates", []))
+        ),
+        "subtitles": prepare_link_data(
+            generate_links(movie_title, TEMPLATES_CACHE.get("subtitle_templates", []))
+        ),
     }
