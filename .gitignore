@@ -1,6 +1,7 @@
 # Deployment
 .vercel
 .venv
+.zed
 
 # Environment variables
 .env
